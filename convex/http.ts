@@ -6,20 +6,23 @@ import {internal} from "./_generated/api"
 
 const validatePayload = async (req: Request): Promise<WebhookEvent | undefined> =>{
     const payload = await req.text()
+    const headerPayload  = req.headers
 
     const svixHeaders = {
-        "svix-id": req.headers.get("svix-id")!,
-        "svix-timestamp": req.headers.get("svix-timestamp")!,
-        "svix-signature": req.headers.get("ssvix-signature")!,
+        "svix-id": headerPayload.get("svix-id")!,
+        "svix-timestamp": headerPayload.get("svix-timestamp")!,
+        "svix-signature": headerPayload.get("svix-signature")!,
     }
 
-    const webhook = new Webhook(process.env.CLERK_WEBHOOK_SECRET || "")
+    const webhook = new Webhook(process.env.CLERK_WEBHOOK_SECRET as string)
 
     try {
         const event = webhook.verify(payload, svixHeaders) as WebhookEvent
+        console.log(event);
         return event
+        
     } catch (error) {
-        console.error("Clerk Webhook could not be verified")
+        console.error("Clerk Webhook could not be verified .....")
         return
     }
 }
@@ -68,4 +71,5 @@ http.route({
     handler: handleClerkWebhook,
 })
 
-export default http
+
+export default http;
